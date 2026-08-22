@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import backend.models as models
 import backend.services.auth_service as auth
 from backend.database import SessionLocal
@@ -234,3 +236,103 @@ def test_admin_can_override_existing_status_without_duplicating(client):
     assert len(records) == 1
     assert records[0]["status"] == "half_day"
     assert records[0]["check_in"] is not None  # original check-in time preserved
+
+
+def _seed_attendance(client, admin_token, employee_id, for_date, status_value):
+    resp = client.put(
+        f"/attendance/{employee_id}/status",
+        json={"date": for_date, "status": status_value},
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp.status_code in (200, 201)
+
+
+def test_me_daily_and_weekly_views_unaffected_by_new_filters(client):
+    """Regression check: /attendance/me with no month/status params behaves
+    exactly as before this change added those params.
+    """
+    admin_token = _admin_token(client)
+    token, _ = _new_employee_token(client, admin_token, "viewsstillwork@dayflow.test")
+
+    checkin_resp = client.post("/attendance/check-in", headers={"Authorization": f"Bearer {token}"})
+    today = checkin_resp.json()["date"]
+
+    daily_resp = client.get("/attendance/me?view=daily", headers={"Authorization": f"Bearer {token}"})
+    assert daily_resp.status_code == 200
+    assert [r["date"] for r in daily_resp.json()] == [today]
+
+    weekly_resp = client.get("/attendance/me?view=weekly", headers={"Authorization": f"Bearer {token}"})
+    assert weekly_resp.status_code == 200
+    assert [r["date"] for r in weekly_resp.json()] == [today]
+
+
+def test_me_filters_by_month(client):
+    admin_token = _admin_token(client)
+    token, created = _new_employee_token(client, admin_token, "monthfilter@dayflow.test")
+    employee_id = created["employee_id"]
+
+    _seed_attendance(client, admin_token, employee_id, "2026-06-15", "present")
+    _seed_attendance(client, admin_token, employee_id, "2026-07-10", "present")
+    _seed_attendance(client, admin_token, employee_id, "2026-07-20", "absent")
+
+    resp = client.get(
+        "/attendance/me?month=7&year=2026", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert resp.status_code == 200
+    dates = {r["date"] for r in resp.json()}
+    assert dates == {"2026-07-10", "2026-07-20"}
+
+
+def test_me_filters_by_status(client):
+    admin_token = _admin_token(client)
+    token, created = _new_employee_token(client, admin_token, "statusfilter@dayflow.test")
+    employee_id = created["employee_id"]
+
+    _seed_attendance(client, admin_token, employee_id, "2026-07-10", "present")
+    _seed_attendance(client, admin_token, employee_id, "2026-07-11", "absent")
+    _seed_attendance(client, admin_token, employee_id, "2026-07-12", "absent")
+
+    resp = client.get(
+        "/attendance/me?month=7&year=2026&status=absent",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+    records = resp.json()
+    assert len(records) == 2
+    assert all(r["status"] == "absent" for r in records)
+
+
+def test_me_combined_month_and_status_filter(client):
+    admin_token = _admin_token(client)
+    token, created = _new_employee_token(client, admin_token, "combinedfilter@dayflow.test")
+    employee_id = created["employee_id"]
+
+    _seed_attendance(client, admin_token, employee_id, "2026-06-05", "absent")  # wrong month
+    _seed_attendance(client, admin_token, employee_id, "2026-07-05", "present")  # wrong status
+    _seed_attendance(client, admin_token, employee_id, "2026-07-06", "absent")  # match
+
+    resp = client.get(
+        "/attendance/me?month=7&year=2026&status=absent",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+    records = resp.json()
+    assert len(records) == 1
+    assert records[0]["date"] == "2026-07-06"
+    assert records[0]["status"] == "absent"
+
+
+def test_me_month_filter_defaults_year_to_current_year(client):
+    admin_token = _admin_token(client)
+    token, created = _new_employee_token(client, admin_token, "defaultyear@dayflow.test")
+    employee_id = created["employee_id"]
+
+    current_year = datetime.now().year
+    _seed_attendance(client, admin_token, employee_id, f"{current_year}-03-15", "present")
+    _seed_attendance(client, admin_token, employee_id, "2020-03-15", "present")
+
+    resp = client.get("/attendance/me?month=3", headers={"Authorization": f"Bearer {token}"})
+    assert resp.status_code == 200
+    records = resp.json()
+    assert len(records) == 1
+    assert records[0]["date"] == f"{current_year}-03-15"

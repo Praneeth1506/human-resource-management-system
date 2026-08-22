@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from sqlalchemy import extract
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -93,23 +94,41 @@ def check_out(
 @router.get("/attendance/me", response_model=list[schemas.AttendanceOut])
 def my_attendance(
     view: str = Query("weekly", pattern="^(daily|weekly)$"),
+    month: Optional[int] = Query(None, ge=1, le=12),
+    year: Optional[int] = Query(None, ge=2000, le=2100),
+    status_filter: Optional[str] = Query(
+        None,
+        alias="status",
+        pattern="^(present|absent|half_day|leave|late)$",
+    ),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_active_user),
 ):
     employee = _employee_for(current_user)
     today = datetime.now().date()
-    start_date = today if view == "daily" else today - timedelta(days=6)
 
-    return (
-        db.query(models.Attendance)
-        .filter(
-            models.Attendance.employee_id == employee.id,
+    query = db.query(models.Attendance).filter(models.Attendance.employee_id == employee.id)
+
+    # `month` opts into a calendar-month window instead of the `view`-based
+    # rolling window below; `year` only matters alongside `month` and
+    # defaults to the current year when omitted.
+    if month is not None:
+        filter_year = year if year is not None else today.year
+        query = query.filter(
+            extract("year", models.Attendance.date) == filter_year,
+            extract("month", models.Attendance.date) == month,
+        )
+    else:
+        start_date = today if view == "daily" else today - timedelta(days=6)
+        query = query.filter(
             models.Attendance.date >= start_date,
             models.Attendance.date <= today,
         )
-        .order_by(models.Attendance.date)
-        .all()
-    )
+
+    if status_filter is not None:
+        query = query.filter(models.Attendance.status == status_filter)
+
+    return query.order_by(models.Attendance.date).all()
 
 
 @router.get("/attendance", response_model=list[schemas.AttendanceOut])
