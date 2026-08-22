@@ -24,11 +24,16 @@ class LeaveRequest(Base):
     remarks = Column(Text)
     attachment_url = Column(String(255))
     status = Column(String(20), default="pending")
+    review_comment = Column(String(255))
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     __table_args__ = (
         CheckConstraint(
             "status IN ('pending', 'approved', 'rejected')",
             name="ck_leave_status",
+        ),
+        CheckConstraint(
+            "leave_type IN ('paid', 'sick', 'unpaid')",
+            name="ck_leave_type",
         ),
     )

@@ -35,6 +35,8 @@ CREATE TABLE employees (
 	joining_date DATE,
 	email VARCHAR(150) NOT NULL,
 	phone VARCHAR(20),
+	address VARCHAR(255),
+	profile_picture VARCHAR(255),
 	PRIMARY KEY (id),
 	CONSTRAINT uq_employees_email UNIQUE (email),
 	FOREIGN KEY(user_id) REFERENCES users (id),
@@ -63,9 +65,11 @@ CREATE TABLE leave_requests (
 	remarks TEXT,
 	attachment_url VARCHAR(255),
 	status VARCHAR(20),
+	review_comment VARCHAR(255),
 	created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
 	PRIMARY KEY (id),
 	CONSTRAINT ck_leave_status CHECK (status IN ('pending', 'approved', 'rejected')),
+	CONSTRAINT ck_leave_type CHECK (leave_type IN ('paid', 'sick', 'unpaid')),
 	FOREIGN KEY(employee_id) REFERENCES employees (id)
 );
 
