@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Layout from "../../components/Layout";
 import api from "../../services/api";
 import "./AdminPages.css";
@@ -148,15 +149,15 @@ function AdminDashboard() {
         <div className="admin-card">
           <h2 style={{ margin: "0 0 16px", fontSize: "18px", color: "#0f172a" }}>Quick Actions</h2>
           <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-            <a href="/admin/employees" className="primary-btn" style={{ textDecoration: "none" }}>
+            <Link to="/admin/employees" className="primary-btn" style={{ textDecoration: "none" }}>
               Manage Employees
-            </a>
-            <a href="/admin/leave" className="secondary-btn" style={{ textDecoration: "none" }}>
+            </Link>
+            <Link to="/admin/leave" className="secondary-btn" style={{ textDecoration: "none" }}>
               Approve Leaves
-            </a>
-            <a href="/attendance" className="secondary-btn" style={{ textDecoration: "none" }}>
+            </Link>
+            <Link to="/admin/attendance" className="secondary-btn" style={{ textDecoration: "none" }}>
               View Attendance
-            </a>
+            </Link>
           </div>
         </div>
 

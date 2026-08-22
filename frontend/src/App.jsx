@@ -15,6 +15,7 @@ import EmployeePayroll from "./pages/employee/Payroll";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import EmployeeManagement from "./pages/admin/EmployeeManagement";
 import LeaveApproval from "./pages/admin/LeaveApproval";
+import AttendanceOverview from "./pages/admin/AttendanceOverview";
 
 // Leave
 import Leave from "./pages/leave/Leave";
@@ -57,6 +58,14 @@ function App() {
           element={
             <ProtectedRoute role="admin">
               <LeaveApproval />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/attendance"
+          element={
+            <ProtectedRoute role="admin">
+              <AttendanceOverview />
             </ProtectedRoute>
           }
         />
