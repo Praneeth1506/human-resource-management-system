@@ -244,6 +244,51 @@ def test_admin_cannot_approve_already_approved_request(client):
     assert second_approve.status_code == 409
 
 
+def test_admin_can_list_and_filter_all_leave_requests(client):
+    admin_token = _admin_token(client)
+    token_a, created_a = _new_employee_token(client, admin_token, "listleavea@dayflow.test")
+    token_b, created_b = _new_employee_token(client, admin_token, "listleaveb@dayflow.test")
+
+    resp_a = client.post(
+        "/leave",
+        json={"leave_type": "paid", "start_date": "2026-10-01", "end_date": "2026-10-02"},
+        headers={"Authorization": f"Bearer {token_a}"},
+    )
+    resp_b = client.post(
+        "/leave",
+        json={"leave_type": "sick", "start_date": "2026-10-05", "end_date": "2026-10-05"},
+        headers={"Authorization": f"Bearer {token_b}"},
+    )
+    leave_id_a = resp_a.json()["id"]
+
+    client.put(
+        f"/leave/{leave_id_a}/approve", json={}, headers={"Authorization": f"Bearer {admin_token}"}
+    )
+
+    all_resp = client.get("/leave", headers={"Authorization": f"Bearer {admin_token}"})
+    assert all_resp.status_code == 200
+    assert len(all_resp.json()) == 2
+
+    status_resp = client.get(
+        "/leave?status=pending", headers={"Authorization": f"Bearer {admin_token}"}
+    )
+    assert status_resp.status_code == 200
+    statuses = status_resp.json()
+    assert len(statuses) == 1
+    assert statuses[0]["employee_id"] == created_b["employee_id"]
+    assert statuses[0]["status"] == "pending"
+
+    employee_resp = client.get(
+        f"/leave?employee_id={created_a['employee_id']}",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert employee_resp.status_code == 200
+    employees = employee_resp.json()
+    assert len(employees) == 1
+    assert employees[0]["employee_id"] == created_a["employee_id"]
+    assert employees[0]["status"] == "approved"
+
+
 def test_employee_cannot_approve_or_reject_leave(client):
     admin_token = _admin_token(client)
     token, _ = _new_employee_token(client, admin_token, "noapprove@dayflow.test")
