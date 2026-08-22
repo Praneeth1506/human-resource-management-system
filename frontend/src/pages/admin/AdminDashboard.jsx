@@ -1,166 +1,41 @@
-import Sidebar from "../../components/Sidebar";
-import Navbar from "../../components/Navbar";
-import "./AdminPages.css";
+import { useEffect, useState } from "react";
+import api from "../../services/api";
 
-function AdminDashboard() {
-  const employees = [
-    {
-      id: "EMP001",
-      name: "Arun Kumar",
-      department: "Engineering",
-      status: "Present",
-    },
-    {
-      id: "EMP002",
-      name: "Priya Sharma",
-      department: "Human Resources",
-      status: "Present",
-    },
-    {
-      id: "EMP003",
-      name: "Rahul Das",
-      department: "Finance",
-      status: "Absent",
-    },
-    {
-      id: "EMP004",
-      name: "Sneha R",
-      department: "Engineering",
-      status: "Present",
-    },
-  ];
+export default function AdminDashboard() {
+  const [data, setData] = useState(null);
 
-  const cardStyle = {
-    backgroundColor: "white",
-    padding: "20px",
-    borderRadius: "10px",
-  };
+  useEffect(() => {
+    api.get("/dashboard/admin").then((res) => setData(res.data));
+  }, []);
 
-  const thStyle = {
-    padding: "15px",
-    textAlign: "left",
-    borderBottom: "1px solid #ddd",
-  };
-
-  const tdStyle = {
-    padding: "15px",
-    borderBottom: "1px solid #eee",
-  };
+  if (!data) return <p>Loading...</p>;
 
   return (
-    <div className="admin-page" style={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar role="admin" />
+    <div>
+      <div className="dashboard-grid">
+        <div className="card"><h3>Employees</h3><p className="stat">{data.total_employees}</p></div>
+        <div className="card"><h3>Present Today</h3><p className="stat">{data.present_today}</p></div>
+        <div className="card"><h3>Absent Today</h3><p className="stat">{data.absent_today}</p></div>
+        <div className="card"><h3>Pending Leave</h3><p className="stat">{data.pending_leaves}</p></div>
+      </div>
 
-      <div className="admin-content" style={{ flex: 1 }}>
-        <Navbar />
+      <div className="action-center">
+        <h3>Needs Attention</h3>
+        {data.needs_attention.low_attendance_employees.length === 0 &&
+          data.needs_attention.pending_leave_count === 0 && <p>All clear ✅</p>}
 
-        <main
-          style={{
-            padding: "30px",
-            backgroundColor: "#f5f6fa",
-            minHeight: "calc(100vh - 70px)",
-          }}
-        >
-          <h1>Admin Dashboard</h1>
-          <p>Overview of your organization.</p>
-
-          {/* Statistics Cards */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "20px",
-              marginTop: "25px",
-              marginBottom: "30px",
-            }}
-          >
-            <div style={cardStyle}>
-              <h3>Total Employees</h3>
-              <h2>48</h2>
-            </div>
-
-            <div style={cardStyle}>
-              <h3>Present Today</h3>
-              <h2>42</h2>
-            </div>
-
-            <div style={cardStyle}>
-              <h3>Absent Today</h3>
-              <h2>3</h2>
-            </div>
-
-            <div style={cardStyle}>
-              <h3>Pending Leaves</h3>
-              <h2>5</h2>
-            </div>
+        {data.needs_attention.low_attendance_employees.map((e) => (
+          <div key={e.id} className="alert">
+            ⚠ {e.first_name} {e.last_name} has {e.pct}% attendance
           </div>
+        ))}
 
-          {/* Quick Actions */}
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "25px",
-              borderRadius: "10px",
-              marginBottom: "30px",
-            }}
-          >
-            <h2>Quick Actions</h2>
-
-            <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
-              <button style={buttonStyle}>Manage Employees</button>
-
-              <button style={buttonStyle}>Approve Leaves</button>
-
-              <button style={buttonStyle}>View Attendance</button>
-            </div>
+        {data.needs_attention.pending_leave_count > 0 && (
+          <div className="alert">
+            ⚠ {data.needs_attention.pending_leave_count} pending leave requests
           </div>
-
-          {/* Employee Table */}
-          <h2>Recent Employees</h2>
-
-          <div
-            style={{
-              backgroundColor: "white",
-              borderRadius: "10px",
-              overflow: "auto",
-            }}
-          >
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-              }}
-            >
-              <thead>
-                <tr>
-                  <th style={thStyle}>Employee ID</th>
-                  <th style={thStyle}>Name</th>
-                  <th style={thStyle}>Department</th>
-                  <th style={thStyle}>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {employees.map((employee) => (
-                  <tr key={employee.id}>
-                    <td style={tdStyle}>{employee.id}</td>
-                    <td style={tdStyle}>{employee.name}</td>
-                    <td style={tdStyle}>{employee.department}</td>
-                    <td style={tdStyle}>{employee.status}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </main>
+        )}
       </div>
     </div>
   );
 }
-
-const buttonStyle = {
-  padding: "10px 18px",
-  cursor: "pointer",
-};
-
-export default AdminDashboard;
