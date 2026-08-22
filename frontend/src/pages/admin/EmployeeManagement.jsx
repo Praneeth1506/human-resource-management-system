@@ -1,6 +1,5 @@
 import { useState } from "react";
-import Sidebar from "../../components/Sidebar";
-import Navbar from "../../components/Navbar";
+import Layout from "../../components/Layout";
 import "./AdminPages.css";
 
 function EmployeeManagement() {
@@ -29,7 +28,6 @@ function EmployeeManagement() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("");
-
   const [editingId, setEditingId] = useState(null);
 
   const handleSubmit = (e) => {
@@ -94,86 +92,63 @@ function EmployeeManagement() {
 
   const inputStyle = {
     width: "100%",
-    padding: "10px",
+    padding: "10px 14px",
     marginTop: "5px",
     marginBottom: "15px",
     boxSizing: "border-box",
-  };
-
-  const buttonStyle = {
-    padding: "10px 16px",
-    cursor: "pointer",
+    border: "1px solid #eaedf1",
+    borderRadius: "8px",
+    fontSize: "14px",
   };
 
   return (
-    <div className="admin-page" style={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar role="admin" />
-
-      <div className="admin-content" style={{ flex: 1 }}>
-        <Navbar />
-
-        <main
-          style={{
-            padding: "30px",
-            backgroundColor: "#f5f6fa",
-            minHeight: "calc(100vh - 70px)",
-          }}
-        >
+    <Layout role="admin">
+      <div className="admin-page">
+        <div className="admin-header-block">
           <h1>Employee Management</h1>
-          <p>Add, edit, delete, and manage employees.</p>
+          <p>Add, edit, delete, and manage organization personnel.</p>
+        </div>
 
-          {/* Add/Edit Employee Form */}
-          <div
-            style={{
-              backgroundColor: "white",
-              padding: "25px",
-              borderRadius: "10px",
-              marginTop: "25px",
-              marginBottom: "30px",
-              maxWidth: "700px",
-            }}
-          >
-            <h2>
-              {editingId ? "Edit Employee" : "Add New Employee"}
-            </h2>
+        {/* Add/Edit Employee Form */}
+        <div className="admin-card" style={{ maxWidth: "640px" }}>
+          <h2 style={{ margin: "0 0 16px", fontSize: "18px", color: "#0f172a" }}>
+            {editingId ? "Edit Employee" : "Add New Employee"}
+          </h2>
 
-            <form onSubmit={handleSubmit}>
-              <label>Employee Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={inputStyle}
-                placeholder="Enter employee name"
-              />
+          <form onSubmit={handleSubmit}>
+            <label style={{ fontSize: "13px", fontWeight: "700", color: "#64748b" }}>Employee Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={inputStyle}
+              placeholder="Enter employee name"
+            />
 
-              <label>Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={inputStyle}
-                placeholder="Enter email"
-              />
+            <label style={{ fontSize: "13px", fontWeight: "700", color: "#64748b" }}>Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              style={inputStyle}
+              placeholder="Enter email"
+            />
 
-              <label>Department</label>
-              <select
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                style={inputStyle}
-              >
-                <option value="">Select Department</option>
-                <option>Engineering</option>
-                <option>Human Resources</option>
-                <option>Finance</option>
-                <option>Marketing</option>
-              </select>
+            <label style={{ fontSize: "13px", fontWeight: "700", color: "#64748b" }}>Department</label>
+            <select
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              style={inputStyle}
+            >
+              <option value="">Select Department</option>
+              <option>Engineering</option>
+              <option>Human Resources</option>
+              <option>Finance</option>
+              <option>Marketing</option>
+            </select>
 
-              <button
-                type="submit"
-                className="add-employee-button"
-                style={buttonStyle}
-              >
+            <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+              <button type="submit" className="add-employee-button">
                 {editingId ? "Update Employee" : "Add Employee"}
               </button>
 
@@ -186,18 +161,17 @@ function EmployeeManagement() {
                     setEmail("");
                     setDepartment("");
                   }}
-                  style={{
-                    ...buttonStyle,
-                    marginLeft: "10px",
-                  }}
+                  className="secondary-btn"
                 >
                   Cancel
                 </button>
               )}
-            </form>
-          </div>
+            </div>
+          </form>
+        </div>
 
-          {/* Search */}
+        {/* Search */}
+        <div style={{ marginBottom: "16px" }}>
           <input
             type="text"
             placeholder="Search by name, ID, or department..."
@@ -205,85 +179,57 @@ function EmployeeManagement() {
             onChange={(e) => setSearch(e.target.value)}
             style={{
               ...inputStyle,
-              maxWidth: "500px",
+              maxWidth: "400px",
+              marginBottom: 0,
             }}
           />
+        </div>
 
-          {/* Employee Table */}
-          <div
-            style={{
-              backgroundColor: "white",
-              borderRadius: "10px",
-              overflow: "auto",
-            }}
-          >
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-              }}
-            >
-              <thead>
-                <tr>
-                  <th style={styles.th}>Employee ID</th>
-                  <th style={styles.th}>Name</th>
-                  <th style={styles.th}>Email</th>
-                  <th style={styles.th}>Department</th>
-                  <th style={styles.th}>Actions</th>
+        {/* Employee Table */}
+        <div className="admin-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Employee ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {filteredEmployees.map((employee) => (
+                <tr key={employee.id}>
+                  <td><strong>{employee.id}</strong></td>
+                  <td>{employee.name}</td>
+                  <td>{employee.email}</td>
+                  <td>{employee.department}</td>
+
+                  <td>
+                    <button
+                      onClick={() => handleEdit(employee)}
+                      className="secondary-btn small-btn"
+                      style={{ marginRight: "8px" }}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(employee.id)}
+                      className="btn-reject"
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-
-              <tbody>
-                {filteredEmployees.map((employee) => (
-                  <tr key={employee.id}>
-                    <td style={styles.td}>{employee.id}</td>
-                    <td style={styles.td}>{employee.name}</td>
-                    <td style={styles.td}>{employee.email}</td>
-                    <td style={styles.td}>{employee.department}</td>
-
-                    <td style={styles.td}>
-                      <button
-                        onClick={() => handleEdit(employee)}
-                        style={{
-                          padding: "7px 12px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(employee.id)}
-                        style={{
-                          padding: "7px 12px",
-                          marginLeft: "8px",
-                          cursor: "pointer",
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </main>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
-
-const styles = {
-  th: {
-    padding: "15px",
-    textAlign: "left",
-    borderBottom: "1px solid #ddd",
-  },
-  td: {
-    padding: "15px",
-    borderBottom: "1px solid #eee",
-  },
-};
 
 export default EmployeeManagement;
