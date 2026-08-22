@@ -3,15 +3,13 @@ import Layout from "../../components/Layout";
 import api from "../../services/api";
 import "./AdminPages.css";
 
-const defaultEmployees = [
-  { id: "EMP001", name: "Arun Kumar", department: "Engineering", status: "Present" },
-  { id: "EMP002", name: "Priya Sharma", department: "Human Resources", status: "Present" },
-  { id: "EMP003", name: "Rahul Das", department: "Finance", status: "Absent" },
-  { id: "EMP004", name: "Sneha R", department: "Engineering", status: "Present" },
-];
+const RECENT_EMPLOYEES_COUNT = 4;
 
 function AdminDashboard() {
   const [data, setData] = useState(null);
+  const [recentEmployees, setRecentEmployees] = useState([]);
+  const [recentLoading, setRecentLoading] = useState(true);
+  const [recentError, setRecentError] = useState("");
 
   useEffect(() => {
     api
@@ -29,6 +27,31 @@ function AdminDashboard() {
           },
         });
       });
+  }, []);
+
+  useEffect(() => {
+    const today = new Date();
+    const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+    Promise.all([api.get("/employees"), api.get(`/attendance?date=${todayIso}`)])
+      .then(([employeesRes, attendanceRes]) => {
+        const statusByEmployeeId = {};
+        attendanceRes.data.forEach((record) => {
+          statusByEmployeeId[record.employee_id] = record.status;
+        });
+
+        const merged = [...employeesRes.data]
+          .sort((a, b) => b.id - a.id)
+          .slice(0, RECENT_EMPLOYEES_COUNT)
+          .map((employee) => ({
+            ...employee,
+            todayStatus: statusByEmployeeId[employee.id] || "Not Marked",
+          }));
+
+        setRecentEmployees(merged);
+      })
+      .catch(() => setRecentError("Could not load recent employees."))
+      .finally(() => setRecentLoading(false));
   }, []);
 
   const stats = data || {
@@ -139,32 +162,38 @@ function AdminDashboard() {
 
         {/* Employee Table */}
         <h2 style={{ margin: "24px 0 14px", fontSize: "18px", color: "#0f172a" }}>Recent Employees</h2>
-        <div className="admin-table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Employee ID</th>
-                <th>Name</th>
-                <th>Department</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {defaultEmployees.map((employee) => (
-                <tr key={employee.id}>
-                  <td><strong>{employee.id}</strong></td>
-                  <td>{employee.name}</td>
-                  <td>{employee.department}</td>
-                  <td>
-                    <span className={employee.status === "Present" ? "present-badge" : "status-rejected"}>
-                      {employee.status}
-                    </span>
-                  </td>
+
+        {recentLoading && <p style={{ color: "#64748b" }}>Loading recent employees...</p>}
+        {recentError && <p style={{ color: "#d33" }}>{recentError}</p>}
+
+        {!recentLoading && !recentError && (
+          <div className="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Employee ID</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {recentEmployees.map((employee) => (
+                  <tr key={employee.id}>
+                    <td><strong>{employee.login_id}</strong></td>
+                    <td>{employee.first_name} {employee.last_name}</td>
+                    <td>{employee.department || "—"}</td>
+                    <td>
+                      <span className={employee.todayStatus === "present" ? "present-badge" : "status-rejected"}>
+                        {employee.todayStatus}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </Layout>
   );
