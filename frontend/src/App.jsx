@@ -2,6 +2,8 @@ import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import Attendance from "./pages/Attendance";
+import Leave from "./pages/Leave";
 import Payroll from "./pages/Payroll";
 import ProfileModal from "./components/ProfileModal";
 import StatusDot from "./components/StatusDot";
@@ -66,24 +68,18 @@ function App() {
               </NavLink>
               <NavLink
                 to="/attendance"
-                className="nav-link nav-link-dimmed"
-                title="Handled by Attendance Team"
-                onClick={(e) => {
-                  e.preventDefault();
-                  alert("Attendance day-wise records are managed in the Attendance module.");
-                }}
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
               >
                 <span className="nav-icon">📅</span>
                 <span>Attendance</span>
               </NavLink>
               <NavLink
                 to="/time-off"
-                className="nav-link nav-link-dimmed"
-                title="Handled by Time Off Team"
-                onClick={(e) => {
-                  e.preventDefault();
-                  alert("Time off calendar and approvals are managed in the Time Off module.");
-                }}
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
               >
                 <span className="nav-icon">✈️</span>
                 <span>Time Off</span>
@@ -233,6 +229,9 @@ function App() {
                 )
               }
             />
+            <Route path="/attendance" element={<Attendance />} />
+            <Route path="/time-off" element={<Leave />} />
+            <Route path="/leave" element={<Leave />} />
             <Route
               path="/payroll"
               element={<Payroll employeeId={currentUser.id} />}

@@ -1745,3 +1745,76 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Simple Data Table (Attendance / Leave)
+   -------------------------------------------------------------------------- */
+.simple-table-wrap {
+  overflow-x: auto;
+}
+
+.simple-table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+}
+
+.simple-table th {
+  text-align: left;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.simple-table td {
+  padding: 12px;
+  font-size: 0.88rem;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.simple-table tr:last-child td {
+  border-bottom: none;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.status-chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-chip.chip-green {
+  background: var(--green-pastel);
+  color: var(--green-text);
+}
+
+.status-chip.chip-yellow {
+  background: var(--yellow-pastel);
+  color: var(--yellow-text);
+}
+
+.status-chip.chip-red {
+  background: var(--red-pastel);
+  color: var(--red-text);
+}
+
+.status-chip.chip-blue {
+  background: var(--blue-pastel);
+  color: var(--blue-text);
+}
