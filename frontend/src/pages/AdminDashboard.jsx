@@ -4,87 +4,66 @@ import EmployeeCard from "../components/EmployeeCard";
 import ProfileModal from "../components/ProfileModal";
 import StatusDot from "../components/StatusDot";
 
-// Comprehensive employee directory dataset
 const INITIAL_TEAM_MEMBERS = [
   {
     id: 1,
     name: "Alicia Martin",
-    role: "Lead Product Designer",
+    role: "Product Designer",
     department: "Design & UX",
     status: "present",
     initials: "AM",
-    email: "alicia.martin@company.com",
+    email: "alicia.martin@dayflow.com",
     wage: 90000,
   },
   {
     id: 2,
     name: "Daniel Lee",
-    role: "Senior Frontend Engineer",
+    role: "Frontend Engineer",
     department: "Engineering",
     status: "leave",
     initials: "DL",
-    email: "daniel.lee@company.com",
+    email: "daniel.lee@dayflow.com",
     wage: 85000,
   },
   {
     id: 3,
     name: "Priya Shah",
-    role: "HR & Talent Specialist",
-    department: "People Operations",
+    role: "HR Manager",
+    department: "People Ops",
     status: "present",
     initials: "PS",
-    email: "priya.shah@company.com",
+    email: "priya.shah@dayflow.com",
     wage: 75000,
   },
   {
     id: 4,
     name: "Marco Silva",
-    role: "DevOps & Cloud Engineer",
+    role: "DevOps Engineer",
     department: "Infrastructure",
     status: "absent",
     initials: "MS",
-    email: "marco.silva@company.com",
+    email: "marco.silva@dayflow.com",
     wage: 88000,
   },
   {
     id: 5,
     name: "Nina Patel",
-    role: "Finance & Payroll Lead",
+    role: "Finance Lead",
     department: "Finance",
     status: "present",
     initials: "NP",
-    email: "nina.patel@company.com",
+    email: "nina.patel@dayflow.com",
     wage: 82000,
   },
   {
     id: 6,
     name: "Owen Brooks",
-    role: "Customer Success Manager",
+    role: "Customer Support",
     department: "Support",
     status: "leave",
     initials: "OB",
-    email: "owen.brooks@company.com",
+    email: "owen.brooks@dayflow.com",
     wage: 65000,
-  },
-  {
-    id: 7,
-    name: "Sophia Chen",
-    role: "Backend Architect",
-    department: "Engineering",
-    status: "present",
-    initials: "SC",
-    email: "sophia.chen@company.com",
-    wage: 95000,
-  },
-  {
-    id: 8,
-    name: "Lucas Vance",
-    role: "QA Automation Lead",
-    department: "Quality",
-    status: "present",
-    initials: "LV",
-    email: "lucas.vance@company.com",
-    wage: 72000,
   },
 ];
 
@@ -99,7 +78,6 @@ export default function AdminDashboard({ searchQuery = "" }) {
       .get("/dashboard/admin")
       .then((res) => setData(res.data))
       .catch(() => {
-        // High quality fallback data if backend is offline
         setData({
           total_employees: INITIAL_TEAM_MEMBERS.length,
           present_today: INITIAL_TEAM_MEMBERS.filter((m) => m.status === "present").length,
@@ -141,112 +119,63 @@ export default function AdminDashboard({ searchQuery = "" }) {
 
   return (
     <div className="admin-dashboard-container">
-      {/* Header Banner */}
-      <div className="dashboard-welcome-banner">
-        <div>
-          <span className="section-eyebrow">ADMINISTRATIVE CONSOLE</span>
-          <h1 className="dashboard-heading">Organization Overview</h1>
-          <p className="dashboard-subtext">
-            Monitor real-time employee attendance, view profiles, and handle team operations.
-          </p>
-        </div>
-        <div className="banner-stats-pill">
-          <StatusDot status="present" pulse size="md" />
-          <span>Live Sync Active</span>
-        </div>
-      </div>
-
-      {/* Top Metric Cards with Theme Pastel Blocks */}
-      <section className="dashboard-grid">
-        {/* Metric 1: Total Employees */}
-        <div className="metric-card purple">
-          <div className="metric-head">
-            <span className="metric-title">Total Employees</span>
-            <div className="metric-icon-box purple">
-              <span>👥</span>
-            </div>
+      {/* 4-Column Metric Cards Grid */}
+      <section className="admin-metrics-grid">
+        <div className="admin-metric-card">
+          <div className="admin-metric-head">
+            <span className="admin-metric-title">Total Employees</span>
+            <span className="admin-metric-badge teal">Active</span>
           </div>
-          <div className="metric-body">
-            <div className="metric-value">
-              <strong>{stats.total_employees}</strong>
-              <span className="metric-unit">Active</span>
-            </div>
-            <div className="metric-footer-badge purple">
-              <span>↑ 2 joined this month</span>
-            </div>
+          <div className="admin-metric-val-row">
+            <strong className="admin-metric-num">{stats.total_employees}</strong>
+            <span className="admin-metric-sub">members</span>
           </div>
         </div>
 
-        {/* Metric 2: Present Today */}
-        <div className="metric-card green">
-          <div className="metric-head">
-            <span className="metric-title">Present Today</span>
-            <div className="metric-icon-box green">
-              <span>✓</span>
-            </div>
+        <div className="admin-metric-card">
+          <div className="admin-metric-head">
+            <span className="admin-metric-title">Present Today</span>
+            <StatusDot status="present" size="sm" pulse />
           </div>
-          <div className="metric-body">
-            <div className="metric-value">
-              <strong>{stats.present_today}</strong>
-              <span className="metric-unit">/{stats.total_employees}</span>
-            </div>
-            <div className="metric-footer-badge green">
-              <span>
-                {Math.round((stats.present_today / (stats.total_employees || 1)) * 100)}% attendance rate
-              </span>
-            </div>
+          <div className="admin-metric-val-row">
+            <strong className="admin-metric-num">{stats.present_today}</strong>
+            <span className="admin-metric-sub">/{stats.total_employees}</span>
           </div>
         </div>
 
-        {/* Metric 3: Absent Today */}
-        <div className="metric-card yellow">
-          <div className="metric-head">
-            <span className="metric-title">Absent / Not Checked In</span>
-            <div className="metric-icon-box yellow">
-              <span>⏱</span>
-            </div>
+        <div className="admin-metric-card">
+          <div className="admin-metric-head">
+            <span className="admin-metric-title">Absent Today</span>
+            <StatusDot status="absent" size="sm" />
           </div>
-          <div className="metric-body">
-            <div className="metric-value">
-              <strong>{stats.absent_today}</strong>
-              <span className="metric-unit">Staff</span>
-            </div>
-            <div className="metric-footer-badge yellow">
-              <span>Unexcused absence</span>
-            </div>
+          <div className="admin-metric-val-row">
+            <strong className="admin-metric-num">{stats.absent_today}</strong>
+            <span className="admin-metric-sub">staff</span>
           </div>
         </div>
 
-        {/* Metric 4: Pending Leaves */}
-        <div className="metric-card pink">
-          <div className="metric-head">
-            <span className="metric-title">Pending Time Off</span>
-            <div className="metric-icon-box pink">
-              <span>☕</span>
-            </div>
+        <div className="admin-metric-card">
+          <div className="admin-metric-head">
+            <span className="admin-metric-title">Pending Leave</span>
+            <StatusDot status="leave" size="sm" />
           </div>
-          <div className="metric-body">
-            <div className="metric-value">
-              <strong>{stats.pending_leaves}</strong>
-              <span className="metric-unit">Requests</span>
-            </div>
-            <div className="metric-footer-badge pink">
-              <span>Requires approval</span>
-            </div>
+          <div className="admin-metric-val-row">
+            <strong className="admin-metric-num">{stats.pending_leaves}</strong>
+            <span className="admin-metric-sub">requests</span>
           </div>
         </div>
       </section>
 
-      {/* Main 2-Column Section: Employee Directory Grid & Action Center */}
+      {/* Main 2-Column Section: Directory & Action Center */}
       <div className="dashboard-columns-layout">
-        {/* Left Column: Employee Directory Grid */}
+        {/* Left Column: Employee Directory */}
         <div className="dashboard-main-column">
-          <section className="saas-card team-directory-card">
+          <section className="saas-card">
             <div className="card-header-flex">
               <div>
                 <h2 className="card-title">Employee Directory</h2>
                 <p className="card-subtitle">
-                  Click any employee card to inspect their view-only profile and compensation details.
+                  Click any employee card to inspect view-only profile and compensation.
                 </p>
               </div>
 
@@ -289,23 +218,15 @@ export default function AdminDashboard({ searchQuery = "" }) {
                   onClick={() => setSelectedEmployee(member)}
                 />
               ))}
-
-              {filteredMembers.length === 0 && (
-                <div className="empty-search-state">
-                  <span className="empty-icon">🔍</span>
-                  <p>No employees found matching &ldquo;{searchQuery}&rdquo;</p>
-                </div>
-              )}
             </div>
           </section>
         </div>
 
-        {/* Right Column: Action Center ("Needs Attention") */}
+        {/* Right Column: Action Center */}
         <aside className="dashboard-side-column">
           <section className="saas-card action-center-card">
             <div className="action-center-header">
               <div className="action-title-row">
-                <span className="action-badge-pulse" />
                 <h3 className="card-title">Action Center</h3>
               </div>
               <span className="attention-counter-pill">
@@ -315,23 +236,22 @@ export default function AdminDashboard({ searchQuery = "" }) {
               </span>
             </div>
             <p className="card-subtitle">
-              High-priority flags requiring HR review or payroll reconciliation.
+              High-priority items requiring attention.
             </p>
 
             <div className="action-alerts-list">
-              {/* Low Attendance Alerts */}
               {stats.needs_attention?.low_attendance_employees?.map((emp) => (
                 <div key={emp.id} className="alert-card alert-warning">
                   <div className="alert-icon-box warning">
                     <span>⚠️</span>
                   </div>
                   <div className="alert-content">
-                    <div className="alert-title">Low Attendance Warning</div>
+                    <div className="alert-title">Low Attendance</div>
                     <p className="alert-desc">
                       <strong>
                         {emp.first_name} {emp.last_name}
                       </strong>{" "}
-                      has dropped to <span className="highlight-pct">{emp.pct}%</span> monthly attendance.
+                      has {emp.pct}% attendance this month.
                     </p>
                     <button
                       className="alert-link-btn"
@@ -340,13 +260,12 @@ export default function AdminDashboard({ searchQuery = "" }) {
                         if (target) setSelectedEmployee(target);
                       }}
                     >
-                      View Profile & Attendance →
+                      View Profile →
                     </button>
                   </div>
                 </div>
               ))}
 
-              {/* Pending Leave Requests */}
               {stats.needs_attention?.pending_leave_count > 0 && (
                 <div className="alert-card alert-danger">
                   <div className="alert-icon-box danger">
@@ -355,32 +274,20 @@ export default function AdminDashboard({ searchQuery = "" }) {
                   <div className="alert-content">
                     <div className="alert-title">Pending Leave Requests</div>
                     <p className="alert-desc">
-                      <strong>{stats.needs_attention.pending_leave_count} team members</strong> are
-                      awaiting leave approval for this pay period.
+                      <strong>{stats.needs_attention.pending_leave_count} requests</strong> awaiting approval.
                     </p>
-                    <button
-                      className="alert-link-btn"
-                      onClick={() =>
-                        alert(
-                          "Deep link to Time Off module: Time off approvals are handled by Time Off team."
-                        )
-                      }
-                    >
-                      Open Approval Queue →
-                    </button>
                   </div>
                 </div>
               )}
 
-              {/* Attendance Data Payroll Linkage Notice */}
               <div className="alert-card alert-info">
                 <div className="alert-icon-box info">
                   <span>💡</span>
                 </div>
                 <div className="alert-content">
-                  <div className="alert-title">Payroll Linkage Notice</div>
+                  <div className="alert-title">Payroll Policy Notice</div>
                   <p className="alert-desc">
-                    Attendance records serve as the basis for payroll generation. Unpaid leaves automatically reduce payable days.
+                    Attendance records serve as the basis for payroll generation.
                   </p>
                 </div>
               </div>
@@ -389,7 +296,7 @@ export default function AdminDashboard({ searchQuery = "" }) {
         </aside>
       </div>
 
-      {/* View-Only Profile Modal for Clicked Employee */}
+      {/* View-Only Profile Modal */}
       <ProfileModal
         isOpen={!!selectedEmployee}
         onClose={() => setSelectedEmployee(null)}

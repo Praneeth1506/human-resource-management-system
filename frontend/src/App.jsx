@@ -10,6 +10,8 @@ import Attendance from "./pages/employee/Attendance";
 import Profile from "./pages/employee/Profile";
 import EditProfile from "./pages/employee/EditProfile";
 import Payroll from "./pages/Payroll";
+
+// Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import EmployeeManagement from "./pages/admin/EmployeeManagement";
 import LeaveApproval from "./pages/admin/LeaveApproval";
@@ -20,19 +22,20 @@ import Leave from "./pages/leave/Leave";
 // Protected Route
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import "./App.css";
+
 function App() {
   return (
     <Router>
       <Routes>
         {/* Default Route */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/employee/dashboard" replace />} />
 
         {/* Authentication */}
         <Route path="/login" element={<Login />} />
-
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* Admin */}
+        {/* Admin Routes */}
         <Route
           path="/admin/dashboard"
           element={
@@ -67,6 +70,9 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Dashboard shortcut redirect */}
+        <Route path="/dashboard" element={<Navigate to="/employee/dashboard" replace />} />
 
         {/* Attendance */}
         <Route
@@ -118,8 +124,8 @@ function App() {
           }
         />
 
-        {/* Unknown Route */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Unknown Route fallback */}
+        <Route path="*" element={<Navigate to="/employee/dashboard" replace />} />
       </Routes>
     </Router>
   );
