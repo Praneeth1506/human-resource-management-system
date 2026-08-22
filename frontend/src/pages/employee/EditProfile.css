@@ -1,0 +1,149 @@
+.edit-profile-page {
+  width: 100%;
+}
+
+.edit-profile-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.edit-profile-heading h1 {
+  margin: 0;
+  font-size: 30px;
+  color: #243038;
+}
+
+.edit-profile-heading p {
+  margin: 8px 0 0;
+  color: #7b858c;
+  font-size: 15px;
+}
+
+.back-profile-button {
+  background: white;
+  color: #256c69;
+  border: 1px solid #256c69;
+  padding: 12px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.edit-section-card {
+  background: white;
+  border: 1px solid #e9eeef;
+  border-radius: 16px;
+  padding: 26px;
+  margin-bottom: 22px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+.edit-section-heading {
+  border-bottom: 1px solid #edf0f1;
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+}
+
+.edit-section-heading h2 {
+  margin: 0;
+  color: #29343a;
+  font-size: 19px;
+}
+
+.edit-section-heading p {
+  margin: 6px 0 0;
+  color: #8a949a;
+  font-size: 13px;
+}
+
+.edit-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  color: #566168;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  border: 1px solid #dce2e4;
+  border-radius: 9px;
+  outline: none;
+  font-size: 14px;
+  color: #344047;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #256c69;
+}
+
+.form-group input:disabled {
+  background: #f4f6f6;
+  color: #8a949a;
+  cursor: not-allowed;
+}
+
+.edit-profile-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.cancel-edit-button,
+.save-profile-button {
+  border: none;
+  padding: 13px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-edit-button {
+  background: white;
+  color: #5d676d;
+  border: 1px solid #dce2e4;
+}
+
+.save-profile-button {
+  background: #256c69;
+  color: white;
+}
+
+.save-profile-button:hover {
+  background: #1d5a57;
+}
+
+@media (max-width: 700px) {
+  .edit-profile-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .edit-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-profile-actions {
+    justify-content: flex-start;
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Avatar from "./Avatar";
 import StatusDot from "./StatusDot";
 
@@ -12,7 +12,6 @@ export default function ProfileModal({
   onClose,
   employee,
   isAdmin = true,
-  viewOnly = true,
 }) {
   const [activeTab, setActiveTab] = useState("profile");
 

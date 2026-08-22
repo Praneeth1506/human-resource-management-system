@@ -1,254 +1,87 @@
-import { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
-import EmployeeDashboard from "./pages/EmployeeDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import Attendance from "./pages/Attendance";
-import Leave from "./pages/Leave";
-import Payroll from "./pages/Payroll";
-import ProfileModal from "./components/ProfileModal";
-import StatusDot from "./components/StatusDot";
-import Avatar from "./components/Avatar";
-import "./App.css";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
-// Default user data for session context
-const DEFAULT_USER = {
-  id: 1,
-  name: "Alex Morgan",
-  initials: "AM",
-  role: "admin", // "admin" | "employee"
-  job_title: "Head of People & Operations",
-  department: "People Operations",
-  email: "alex.morgan@company.com",
-  status: "present",
-  wage: 85000,
-};
+// Authentication
+import Login from "./pages/auth/Login";
+import ResetPassword from "./pages/auth/ResetPassword";
+
+// Employee Pages
+import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
+import Attendance from "./pages/employee/Attendance";
+import Profile from "./pages/employee/Profile";
+import EditProfile from "./pages/employee/EditProfile";
+
+// Leave
+import Leave from "./pages/leave/Leave";
+
+// Protected Route
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-  const [currentRole, setCurrentRole] = useState("admin"); // toggleable between 'admin' and 'employee'
-  const [isCheckedIn, setIsCheckedIn] = useState(true);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const handleCheckInToggle = () => {
-    setIsCheckedIn((prev) => !prev);
-  };
-
-  const currentUser = {
-    ...DEFAULT_USER,
-    status: isCheckedIn ? "present" : "absent",
-    role: currentRole,
-  };
-
   return (
-    <BrowserRouter>
-      <div className="app-shell">
-        {/* Modern Top Navigation Bar */}
-        <header className="topbar">
-          <div className="topbar-left">
-            <NavLink to="/dashboard" className="brand">
-              <div className="brand-icon">
-                <span>✦</span>
-              </div>
-              <div className="brand-text">
-                <span className="brand-name">WorkPulse</span>
-                <span className="brand-tag">HRMS</span>
-              </div>
-            </NavLink>
+    <Router>
+      <Routes>
+        {/* Default Route */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
-            <nav className="nav-links">
-              <NavLink
-                to="/dashboard"
-                className={({ isActive }) =>
-                  `nav-link ${isActive ? "active" : ""}`
-                }
-              >
-                <span className="nav-icon">👥</span>
-                <span>Employees</span>
-              </NavLink>
-              <NavLink
-                to="/attendance"
-                className={({ isActive }) =>
-                  `nav-link ${isActive ? "active" : ""}`
-                }
-              >
-                <span className="nav-icon">📅</span>
-                <span>Attendance</span>
-              </NavLink>
-              <NavLink
-                to="/time-off"
-                className={({ isActive }) =>
-                  `nav-link ${isActive ? "active" : ""}`
-                }
-              >
-                <span className="nav-icon">✈️</span>
-                <span>Time Off</span>
-              </NavLink>
-              <NavLink
-                to="/payroll"
-                className={({ isActive }) =>
-                  `nav-link ${isActive ? "active" : ""}`
-                }
-              >
-                <span className="nav-icon">💳</span>
-                <span>Payroll</span>
-              </NavLink>
-            </nav>
-          </div>
+        {/* Authentication */}
+        <Route path="/login" element={<Login />} />
 
-          <div className="topbar-right">
-            {/* Search Input Bar (Image 2 theme) */}
-            <div className="search-bar">
-              <span className="search-icon">🔍</span>
-              <input
-                type="text"
-                placeholder="Search employees, roles, IDs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
-            </div>
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-            {/* Quick Check-In / Check-Out Widget */}
-            <button
-              className={`checkin-btn ${isCheckedIn ? "checked-in" : "checked-out"}`}
-              onClick={handleCheckInToggle}
-              title="Click to toggle attendance status"
-            >
-              <StatusDot status={isCheckedIn ? "present" : "absent"} size="sm" pulse={isCheckedIn} />
-              <span>{isCheckedIn ? "Checked In" : "Check In"}</span>
-            </button>
-
-            {/* Notifications */}
-            <button
-              className="icon-button notification-btn"
-              aria-label="Notifications"
-              onClick={() => alert("Action Center: 2 items need attention today.")}
-            >
-              <span>🔔</span>
-              <span className="notification-badge" />
-            </button>
-
-            {/* Profile Pill with Dropdown */}
-            <div className="profile-menu-container">
-              <button
-                className="profile-pill"
-                onClick={() => setShowProfileMenu((prev) => !prev)}
-                aria-expanded={showProfileMenu}
-              >
-                <Avatar
-                  initials={currentUser.initials}
-                  name={currentUser.name}
-                  size="sm"
-                  status={currentUser.status}
-                  paletteIndex={2}
-                />
-                <span className="profile-pill-name">{currentUser.name}</span>
-                <span className="profile-pill-chevron">▾</span>
-              </button>
-
-              {showProfileMenu && (
-                <div
-                  className="profile-dropdown-menu"
-                  onClick={() => setShowProfileMenu(false)}
-                >
-                  <div className="dropdown-user-header">
-                    <strong>{currentUser.name}</strong>
-                    <span className="user-role-badge">
-                      {currentRole === "admin" ? "HR Admin" : "Employee"}
-                    </span>
-                    <p className="user-email-text">{currentUser.email}</p>
-                  </div>
-
-                  <div className="dropdown-divider" />
-
-                  <button
-                    className="dropdown-item"
-                    onClick={() => setIsProfileModalOpen(true)}
-                  >
-                    <span className="dropdown-item-icon">👤</span>
-                    <span>My Profile</span>
-                  </button>
-
-                  <div className="dropdown-divider" />
-
-                  {/* Role switcher for convenient local validation */}
-                  <div className="role-switch-row">
-                    <span className="role-switch-label">Viewing Mode:</span>
-                    <div className="role-toggle-group">
-                      <button
-                        className={`role-toggle-btn ${currentRole === "admin" ? "active" : ""}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentRole("admin");
-                        }}
-                      >
-                        Admin
-                      </button>
-                      <button
-                        className={`role-toggle-btn ${currentRole === "employee" ? "active" : ""}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentRole("employee");
-                        }}
-                      >
-                        Employee
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="dropdown-divider" />
-
-                  <button
-                    className="dropdown-item text-danger"
-                    onClick={() => alert("Logged out successfully.")}
-                  >
-                    <span className="dropdown-item-icon">🚪</span>
-                    <span>Log Out</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content Area */}
-        <main className="page-container">
-          <Routes>
-            <Route
-              path="/dashboard"
-              element={
-                currentRole === "admin" ? (
-                  <AdminDashboard searchQuery={searchQuery} />
-                ) : (
-                  <EmployeeDashboard
-                    employeeId={currentUser.id}
-                    isCheckedIn={isCheckedIn}
-                    onToggleCheckIn={handleCheckInToggle}
-                  />
-                )
-              }
-            />
-            <Route path="/attendance" element={<Attendance />} />
-            <Route path="/time-off" element={<Leave />} />
-            <Route path="/leave" element={<Leave />} />
-            <Route
-              path="/payroll"
-              element={<Payroll employeeId={currentUser.id} />}
-            />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </main>
-
-        {/* "My Profile" Modal (View with Profile / Private Info / Salary Info tabs) */}
-        <ProfileModal
-          isOpen={isProfileModalOpen}
-          onClose={() => setIsProfileModalOpen(false)}
-          employee={currentUser}
-          isAdmin={currentRole === "admin"}
+        {/* Employee Dashboard */}
+        <Route
+          path="/employee/dashboard"
+          element={
+            <ProtectedRoute role="employee">
+              <EmployeeDashboard />
+            </ProtectedRoute>
+          }
         />
-      </div>
-    </BrowserRouter>
+
+        {/* Attendance */}
+        <Route
+          path="/attendance"
+          element={
+            <ProtectedRoute role="employee">
+              <Attendance />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Leave */}
+        <Route
+          path="/leave"
+          element={
+            <ProtectedRoute role="employee">
+              <Leave />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Profile */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute role="employee">
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Edit Profile */}
+        <Route
+          path="/edit-profile"
+          element={
+            <ProtectedRoute role="employee">
+              <EditProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Unknown Route */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
   );
 }
 

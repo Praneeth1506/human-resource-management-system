@@ -1,5 +1,3 @@
-import React from "react";
-
 /**
  * StatusDot component
  * @param {'present' | 'leave' | 'absent'} status - Current attendance status
