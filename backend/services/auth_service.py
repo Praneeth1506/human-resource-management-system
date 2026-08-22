@@ -2,10 +2,11 @@ import os
 import secrets
 import string
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -26,9 +27,14 @@ COMPANY_CODE = "DF"
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# tokenUrl is only used to populate the Swagger "Authorize" button; our /login
-# takes a JSON body, not an OAuth2 form, so this isn't a real OAuth2 flow.
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login", auto_error=False)
+# HTTPBearer (not OAuth2PasswordBearer) because our /login takes a JSON
+# body, not an OAuth2 form - OAuth2PasswordBearer makes Swagger's Authorize
+# dialog render a username/password/client_id form (for a form-encoded
+# token endpoint we don't have), with no way to paste a raw token. HTTPBearer
+# just describes "send Authorization: Bearer <token>", so Swagger renders a
+# single paste-your-token field instead - purely an OpenAPI/docs difference,
+# doesn't change how tokens are read or validated below.
+bearer_scheme = HTTPBearer(auto_error=False)
 
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
@@ -75,11 +81,13 @@ def create_access_token(user: models.User, must_reset: bool) -> str:
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 
-def get_token_payload(token: str = Depends(oauth2_scheme)) -> dict:
-    if token is None:
+def get_token_payload(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+) -> dict:
+    if credentials is None:
         raise credentials_exception
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except JWTError:
         raise credentials_exception
     if payload.get("sub") is None:
