@@ -244,20 +244,42 @@ def test_payroll_reflects_attendance_and_leave(client):
     admin_token = _admin_token(client)
     token, created = _new_employee_token(client, admin_token, "linkedpayroll@dayflow.test")
     employee_id = created["employee_id"]
-    _insert_payroll(employee_id, 8, 2026)  # working_days=26, stored payable_days=26
+    # basic=30000, hra=10000, pf=1800, professional_tax=200, working_days=26
+    # (see _insert_payroll defaults) - stored payable_days/gross/deductions/
+    # net_pay below are deliberately stale, to prove the response reflects
+    # the live recompute, not these stored values.
+    _insert_payroll(
+        employee_id,
+        8,
+        2026,
+        payable_days=26,
+        gross=Decimal("40000.00"),
+        deductions=Decimal("2000.00"),
+        net_pay=Decimal("38000.00"),
+    )
 
-    _set_attendance_status(employee_id, "2026-08-05", "absent")
-    _insert_unpaid_leave(employee_id, "2026-08-10", "2026-08-11")
+    _set_attendance_status(employee_id, "2026-08-05", "absent")  # 1 unexcused absence
+    _insert_unpaid_leave(employee_id, "2026-08-10", "2026-08-11")  # 2 unpaid leave days
 
     resp = client.get(
         "/payroll/me?month=8&year=2026", headers={"Authorization": f"Bearer {token}"}
     )
     assert resp.status_code == 200
     body = resp.json()
-    # payable_days is recomputed live, not the stale stored value of 26.
-    assert body["payable_days"] == 23
-    assert float(body["gross"]) == 40000.0
-    assert float(body["net_pay"]) < 38000.0  # attendance deduction reduced net pay
+
+    # Hand-calculated expected values (independent of payroll_service's own
+    # code, worked out by hand from the spec's formulas):
+    #   payable_days = 26 working days - 2 unpaid leave - 1 unexcused absence = 23
+    #   gross = basic(30000) + hra(10000) = 40000.00
+    #   per_day_rate = 40000 / 26 = 1538.461538...
+    #   unpaid_days = working_days(26) - payable_days(23) = 3
+    #   attendance_deduction = 1538.461538... * 3 = 4615.384615... -> 4615.38 (2dp, half-up)
+    #   deductions = pf(1800) + professional_tax(200) + attendance_deduction(4615.38) = 6615.38
+    #   net_pay = gross(40000) - deductions(6615.38) = 33384.62
+    assert body["payable_days"] == 23  # recomputed live, not the stale stored value of 26
+    assert Decimal(str(body["gross"])) == Decimal("40000.00")
+    assert Decimal(str(body["deductions"])) == Decimal("6615.38")
+    assert Decimal(str(body["net_pay"])) == Decimal("33384.62")
 
 
 def test_get_payroll_missing_record_returns_404(client):
