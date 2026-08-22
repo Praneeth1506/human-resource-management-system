@@ -1,23 +1,22 @@
-import { Bell, UserCircle } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-
 function Navbar() {
-  const { user } = useAuth();
+  const role = localStorage.getItem("role") || "Employee";
 
   return (
     <header style={styles.navbar}>
       <div>
-        <h3 style={styles.title}>Human Resource Management System</h3>
+        <h3 style={styles.title}>Dayflow HRMS</h3>
       </div>
 
       <div style={styles.right}>
-        <Bell size={22} />
+        <button style={styles.iconBtn} aria-label="Notifications">
+          🔔
+        </button>
 
         <div style={styles.userInfo}>
-          <UserCircle size={28} />
+          <div style={styles.avatarBadge}>AK</div>
           <div>
-            <strong>{user?.name}</strong>
-            <p style={styles.role}>{user?.role}</p>
+            <strong>Arun Kumar</strong>
+            <p style={styles.role}>{role}</p>
           </div>
         </div>
       </div>
@@ -32,29 +31,48 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    borderBottom: "1px solid #ddd",
+    borderBottom: "1px solid #e7e9eb",
+    background: "#ffffff",
     boxSizing: "border-box",
   },
-
   title: {
     margin: 0,
+    fontSize: "18px",
+    fontWeight: "700",
+    color: "#1e293b",
   },
-
   right: {
     display: "flex",
     alignItems: "center",
-    gap: "25px",
+    gap: "20px",
   },
-
+  iconBtn: {
+    border: "none",
+    background: "transparent",
+    fontSize: "18px",
+    cursor: "pointer",
+  },
   userInfo: {
     display: "flex",
     alignItems: "center",
     gap: "10px",
   },
-
+  avatarBadge: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    background: "#113f38",
+    color: "#ffffff",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "12px",
+    fontWeight: "700",
+  },
   role: {
     margin: 0,
     fontSize: "12px",
+    color: "#64748b",
   },
 };
 
