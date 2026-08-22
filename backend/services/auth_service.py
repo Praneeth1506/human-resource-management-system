@@ -96,21 +96,31 @@ def get_current_user(
     return user
 
 
-def require_role(*allowed_roles: str):
-    """Protects a route by role. Also rejects first-login (must_reset) tokens,
+def get_active_user(
+    current_user: models.User = Depends(get_current_user),
+    payload: dict = Depends(get_token_payload),
+) -> models.User:
+    """Like get_current_user, but also rejects first-login (must_reset) tokens,
     so a not-yet-rotated system-generated password can only be used to call
-    /first-login/reset-password, nothing else.
+    /first-login/reset-password, nothing else. Use this (not bare
+    get_current_user) for any route that shouldn't be reachable before the
+    temp password is rotated.
+    """
+    if payload.get("must_reset"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Password reset required before accessing this resource",
+        )
+    return current_user
+
+
+def require_role(*allowed_roles: str):
+    """Protects a route by role. Composes on get_active_user, so it also
+    rejects first-login (must_reset) tokens - same behavior as before this
+    was split out, just shared with non-role-gated routes now too.
     """
 
-    def dependency(
-        current_user: models.User = Depends(get_current_user),
-        payload: dict = Depends(get_token_payload),
-    ) -> models.User:
-        if payload.get("must_reset"):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Password reset required before accessing this resource",
-            )
+    def dependency(current_user: models.User = Depends(get_active_user)) -> models.User:
         if current_user.role not in allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

@@ -1,5 +1,12 @@
+from backend.schemas.attendance import AttendanceOut, AttendanceStatusUpdate
 from backend.schemas.auth import LoginRequest, LoginResponse, ResetPasswordRequest
-from backend.schemas.employee import EmployeeCreate, EmployeeCreated
+from backend.schemas.employee import (
+    EmployeeCreate,
+    EmployeeCreated,
+    EmployeeOut,
+    EmployeeUpdate,
+)
+from backend.schemas.leave import LeaveCreate, LeaveOut, LeaveReview
 
 __all__ = [
     "LoginRequest",
@@ -7,4 +14,11 @@ __all__ = [
     "ResetPasswordRequest",
     "EmployeeCreate",
     "EmployeeCreated",
+    "EmployeeOut",
+    "EmployeeUpdate",
+    "AttendanceOut",
+    "AttendanceStatusUpdate",
+    "LeaveCreate",
+    "LeaveOut",
+    "LeaveReview",
 ]

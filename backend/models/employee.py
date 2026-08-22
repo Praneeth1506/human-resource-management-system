@@ -17,6 +17,8 @@ class Employee(Base):
     joining_date = Column(Date)
     email = Column(String(150), nullable=False)
     phone = Column(String(20))
+    address = Column(String(255))
+    profile_picture = Column(String(255))
 
     __table_args__ = (UniqueConstraint("email", name="uq_employees_email"),)
 
