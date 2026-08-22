@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Layout from "../../components/Layout";
+import api from "../../services/api";
 import "./Attendance.css";
 
 function Attendance() {
@@ -7,6 +8,7 @@ function Attendance() {
   const [checkedOut, setCheckedOut] = useState(false);
   const [checkInTime, setCheckInTime] = useState("");
   const [checkOutTime, setCheckOutTime] = useState("");
+  const [error, setError] = useState("");
 
   const attendanceHistory = [
     {
@@ -58,14 +60,26 @@ function Attendance() {
     });
   };
 
-  const handleCheckIn = () => {
-    setCheckedIn(true);
-    setCheckInTime(getCurrentTime());
+  const handleCheckIn = async () => {
+    setError("");
+    try {
+      await api.post("/attendance/check-in");
+      setCheckedIn(true);
+      setCheckInTime(getCurrentTime());
+    } catch (err) {
+      setError(err.response?.data?.detail || "Check-in failed");
+    }
   };
 
-  const handleCheckOut = () => {
-    setCheckedOut(true);
-    setCheckOutTime(getCurrentTime());
+  const handleCheckOut = async () => {
+    setError("");
+    try {
+      await api.post("/attendance/check-out");
+      setCheckedOut(true);
+      setCheckOutTime(getCurrentTime());
+    } catch (err) {
+      setError(err.response?.data?.detail || "Check-out failed");
+    }
   };
 
   return (
@@ -83,6 +97,10 @@ function Attendance() {
             📅 Friday, August 22, 2026
           </div>
         </div>
+
+        {error && (
+          <p style={{ color: "#d33", fontSize: "0.9rem", margin: "0 0 12px" }}>{error}</p>
+        )}
 
         {/* Today's Attendance */}
         <div className="today-attendance-card">

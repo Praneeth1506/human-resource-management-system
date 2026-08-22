@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from backend.database import get_db
+import backend.services.payroll_service as payroll_service
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -30,17 +31,22 @@ def get_employee_dashboard(employee_id: int, db: Session = Depends(get_db)):
         AND EXTRACT(YEAR FROM start_date) = EXTRACT(YEAR FROM CURRENT_DATE)
     """), {"id": employee_id}).mappings().first()
 
-    payroll = db.execute(text("""
-        SELECT net_pay FROM payroll
-        WHERE employee_id = :id
-        ORDER BY year DESC, month DESC LIMIT 1
-    """), {"id": employee_id}).mappings().first()
+    # Use the shared live-recompute path (same one every other payroll-reading
+    # endpoint uses) instead of reading the raw net_pay column - that column
+    # is intentionally never populated on write, only computed on read, so
+    # reading it directly here always returned NULL and crashed on float(None).
+    payroll_history = payroll_service.get_payroll_history(db, employee_id)
+    latest_payroll = payroll_history[0] if payroll_history else None
 
     return {
         "employee": dict(emp) if emp else None,
         "attendance_percent": attendance_pct,
         "leave_balance": 18 - (leave_balance["used"] or 0),
-        "latest_net_pay": float(payroll["net_pay"]) if payroll else None,
+        "latest_net_pay": (
+            float(latest_payroll["net_pay"])
+            if latest_payroll and latest_payroll["net_pay"] is not None
+            else None
+        ),
     }
 
 

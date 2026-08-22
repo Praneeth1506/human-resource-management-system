@@ -1,10 +1,12 @@
 import { Navigate } from "react-router-dom";
 
 function ProtectedRoute({ children, role }) {
+  const token = localStorage.getItem("token");
   const userRole = localStorage.getItem("role");
 
-  // User is not logged in
-  if (!userRole) {
+  // No token or role stored - not logged in (presence-of-token check only,
+  // not a real server-side verification - see time constraints)
+  if (!token || !userRole) {
     return <Navigate to="/login" replace />;
   }
 

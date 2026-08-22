@@ -1,14 +1,24 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 
-export default function Payroll({ employeeId }) {
+export default function Payroll() {
     const [payroll, setPayroll] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
 
     useEffect(() => {
-        api.get(`/payroll/${employeeId}/latest`).then((res) => setPayroll(res.data));
-    }, [employeeId]);
+        api
+            .get("/payroll/me/history")
+            .then((res) => {
+                setPayroll(res.data.length > 0 ? res.data[0] : null);
+            })
+            .catch(() => setError(true))
+            .finally(() => setLoading(false));
+    }, []);
 
-    if (!payroll) return <p>Loading...</p>;
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Could not load payroll data.</p>;
+    if (!payroll) return <p>No payroll records yet.</p>;
 
     return (
         <div className="payroll-card">
