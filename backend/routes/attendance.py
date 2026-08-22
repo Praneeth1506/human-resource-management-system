@@ -11,6 +11,7 @@ import backend.models as models
 import backend.schemas as schemas
 import backend.services.attendance_service as attendance_service
 import backend.services.auth_service as auth
+import backend.services.risk_service as risk_service
 from backend.database import get_db
 
 router = APIRouter()
@@ -171,3 +172,22 @@ def set_attendance_status(
     db.commit()
     db.refresh(record)
     return record
+
+
+@router.get("/attendance/{employee_id}/risk")
+def attendance_risk(
+    employee_id: int,
+    month: int = Query(..., ge=1, le=12),
+    year: int = Query(..., ge=2000, le=2100),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.require_role("admin")),
+):
+    """Admin/HR tool, not self-service - a threshold-based flag from real
+    attendance + leave data (see risk_service.py), not a machine-learning
+    model. Employees cannot check their own or anyone else's score.
+    """
+    employee = db.query(models.Employee).filter(models.Employee.id == employee_id).first()
+    if employee is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Employee not found")
+
+    return risk_service.calculate_attendance_risk(db, employee_id, month, year)
