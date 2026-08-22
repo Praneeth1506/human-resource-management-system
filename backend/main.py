@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from routes.dashboard import router as dashboard_router
 
 app = FastAPI(title="HRMS API")
 
@@ -11,9 +12,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(dashboard_router)
+
 @app.get("/")
 def root():
     return {"status": "HRMS API running"}
 
 # Person 1 mounts auth/employee/attendance/leave/payroll routers here
-# Person 4 mounts dashboard router here
