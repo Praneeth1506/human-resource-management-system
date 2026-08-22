@@ -42,6 +42,17 @@ function App() {
         </nav>
 
         <div className="page-container">
+          <header className="page-header">
+            <div>
+              <p className="page-eyebrow">Overview</p>
+              <h1 className="page-title">People Operations</h1>
+            </div>
+            <div className="header-actions">
+              <button className="secondary-btn">Export</button>
+              <button className="primary-btn">Check In</button>
+            </div>
+          </header>
+
           <Routes>
             <Route
               path="/dashboard"
