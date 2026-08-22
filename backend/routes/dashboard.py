@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from database import get_db
+from backend.database import get_db
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -61,7 +61,6 @@ def get_admin_dashboard(db: Session = Depends(get_db)):
 
     attendance_rate = round((today_stats["present"] / total_employees) * 100, 1) if total_employees else 0
 
-    # Action Center — attention flags
     low_attendance = db.execute(text("""
         SELECT e.id, e.first_name, e.last_name,
             ROUND(100.0 * COUNT(*) FILTER (WHERE a.status = 'present') / NULLIF(COUNT(*), 0), 1) AS pct
