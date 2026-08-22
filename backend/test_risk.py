@@ -243,3 +243,126 @@ def test_risk_for_nonexistent_employee_returns_404(client):
         headers={"Authorization": f"Bearer {admin_token}"},
     )
     assert resp.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# HR action recommendation
+# ---------------------------------------------------------------------------
+
+
+def test_recommendation_high_risk_no_dominant_factor(client):
+    admin_token = _admin_token(client)
+    _, created = _new_employee_token(client, admin_token, "recdefaulthigh@dayflow.test")
+    employee_id = created["employee_id"]
+
+    # absent contribution = 2*2 = 4, unpaid_leave contribution = 4*1 = 4 -> tied
+    # at the top, so no single factor dominates. risk_score = 4+4+0 = 8 -> HIGH.
+    _seed_attendance(client, admin_token, employee_id, "2026-08-01", "absent")
+    _seed_attendance(client, admin_token, employee_id, "2026-08-02", "absent")
+    _insert_unpaid_leave(employee_id, "2026-08-10", "2026-08-13")  # 4 days
+
+    resp = client.get(
+        f"/attendance/{employee_id}/risk?month=8&year=2026",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["risk_level"] == "HIGH"
+    assert body["recommendation"] == "Schedule an attendance review and monitor closely."
+
+
+def test_recommendation_medium_risk_no_dominant_factor(client):
+    admin_token = _admin_token(client)
+    _, created = _new_employee_token(client, admin_token, "recdefaultmedium@dayflow.test")
+    employee_id = created["employee_id"]
+
+    # absent contribution = 1*2 = 2, late contribution = 2*1 = 2 -> tied at the
+    # top, so no single factor dominates. risk_score = 2+0+2 = 4 -> MEDIUM.
+    _seed_attendance(client, admin_token, employee_id, "2026-08-01", "absent")
+    _seed_attendance(client, admin_token, employee_id, "2026-08-02", "late")
+    _seed_attendance(client, admin_token, employee_id, "2026-08-03", "late")
+
+    resp = client.get(
+        f"/attendance/{employee_id}/risk?month=8&year=2026",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["risk_level"] == "MEDIUM"
+    assert body["recommendation"] == "Monitor attendance and review recent late arrivals."
+
+
+def test_recommendation_low_risk(client):
+    admin_token = _admin_token(client)
+    _, created = _new_employee_token(client, admin_token, "reclow@dayflow.test")
+    employee_id = created["employee_id"]
+
+    _seed_attendance(client, admin_token, employee_id, "2026-08-01", "present")
+
+    resp = client.get(
+        f"/attendance/{employee_id}/risk?month=8&year=2026",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["risk_level"] == "LOW"
+    assert body["recommendation"] == "No immediate action required."
+
+
+def test_recommendation_dominant_absence(client):
+    admin_token = _admin_token(client)
+    _, created = _new_employee_token(client, admin_token, "recdomabsent@dayflow.test")
+    employee_id = created["employee_id"]
+
+    # absent contribution = 4*2 = 8, nothing else -> absent uniquely dominates.
+    for day in ("2026-08-01", "2026-08-02", "2026-08-03", "2026-08-04"):
+        _seed_attendance(client, admin_token, employee_id, day, "absent")
+
+    resp = client.get(
+        f"/attendance/{employee_id}/risk?month=8&year=2026",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["risk_level"] == "HIGH"
+    assert body["recommendation"] == "Review the employee's attendance pattern."
+
+
+def test_recommendation_dominant_late(client):
+    admin_token = _admin_token(client)
+    _, created = _new_employee_token(client, admin_token, "recdomlate@dayflow.test")
+    employee_id = created["employee_id"]
+
+    # late contribution = 5*1 = 5, nothing else -> late uniquely dominates.
+    for day in ("2026-08-01", "2026-08-02", "2026-08-03", "2026-08-04", "2026-08-05"):
+        _seed_attendance(client, admin_token, employee_id, day, "late")
+
+    resp = client.get(
+        f"/attendance/{employee_id}/risk?month=8&year=2026",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["risk_level"] == "MEDIUM"
+    assert body["recommendation"] == "Monitor punctuality and review recent late arrivals."
+
+
+def test_recommendation_dominant_unpaid_leave(client):
+    admin_token = _admin_token(client)
+    _, created = _new_employee_token(client, admin_token, "recdomunpaid@dayflow.test")
+    employee_id = created["employee_id"]
+
+    # unpaid_leave contribution = 5*1 = 5, nothing else -> unpaid leave
+    # uniquely dominates. Also seed one present day so "has attendance data"
+    # is true (otherwise this would hit the insufficient-data LOW path).
+    _seed_attendance(client, admin_token, employee_id, "2026-08-20", "present")
+    _insert_unpaid_leave(employee_id, "2026-08-01", "2026-08-05")  # 5 days
+
+    resp = client.get(
+        f"/attendance/{employee_id}/risk?month=8&year=2026",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["risk_level"] == "MEDIUM"
+    assert body["recommendation"] == "Review recent unpaid leave usage."
