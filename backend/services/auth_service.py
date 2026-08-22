@@ -2,6 +2,7 @@ import os
 import secrets
 import string
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
@@ -14,7 +15,14 @@ from sqlalchemy.orm import Session
 import backend.models as models
 from backend.database import get_db
 
-load_dotenv()
+# Resolve .env relative to this file, not the process's CWD - same fix as
+# backend/database.py and for the same reason (backend/.env is a
+# subdirectory of the repo root, not an ancestor, so a bare load_dotenv()
+# finds nothing when the app is started from the repo root). This was
+# previously masked here only by import order: backend.database happened to
+# load the whole .env first via main.py's earlier imports, so os.environ
+# already had JWT_SECRET by the time this ran. Not guaranteed to stay true.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "HS256")
