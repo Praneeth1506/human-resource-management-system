@@ -44,6 +44,8 @@ def create_employee(
         joining_date=payload.joining_date,
         email=email,
         phone=payload.phone,
+        address=payload.address,
+        profile_picture=payload.profile_picture,
     )
     db.add(employee)
     try:

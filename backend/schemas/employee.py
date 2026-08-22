@@ -12,6 +12,8 @@ class EmployeeCreate(BaseModel):
     joining_date: date
     email: str
     phone: Optional[str] = None
+    address: Optional[str] = None
+    profile_picture: Optional[str] = None
 
 
 class EmployeeCreated(BaseModel):
