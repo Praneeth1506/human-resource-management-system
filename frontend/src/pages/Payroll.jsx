@@ -1,49 +1,51 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import StatusDot from "../components/StatusDot";
+import Layout from "../components/Layout";
+import "./Payroll.css";
+
+const defaultPayroll = {
+  basic: 48000,
+  hra: 24000,
+  pf: 5760,
+  professional_tax: 200,
+  gross: 80000,
+  working_days: 22,
+  payable_days: 21,
+  deductions: 3636,
+  net_pay: 70404,
+  period: "August 2026",
+  status: "processed",
+};
+
+const formatCurrency = (value, fallback) => {
+  if (value === "" || value === null || value === undefined) {
+    return fallback.toLocaleString("en-IN");
+  }
+
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount.toLocaleString("en-IN") : fallback.toLocaleString("en-IN");
+};
 
 export default function Payroll({ employeeId = 1 }) {
-  const [payroll, setPayroll] = useState(null);
+  const [payroll, setPayroll] = useState(defaultPayroll);
   const [selectedMonth, setSelectedMonth] = useState("August 2026");
 
   useEffect(() => {
     api
       .get(`/payroll/${employeeId}/latest`)
-      .then((res) => setPayroll(res.data))
+      .then((res) => setPayroll({ ...defaultPayroll, ...(res.data || {}) }))
       .catch(() => {
         // High quality fallback data if API is offline
-        setPayroll({
-          basic: 48000,
-          hra: 24000,
-          pf: 5760,
-          professional_tax: 200,
-          gross: 80000,
-          working_days: 22,
-          payable_days: 21,
-          deductions: 3636, // 1 day unpaid attendance deduction
-          net_pay: 70404,
-          period: "August 2026",
-          status: "processed",
-        });
+        setPayroll(defaultPayroll);
       });
   }, [employeeId]);
 
-  const p = payroll || {
-    basic: 48000,
-    hra: 24000,
-    pf: 5760,
-    professional_tax: 200,
-    gross: 80000,
-    working_days: 22,
-    payable_days: 21,
-    deductions: 3636,
-    net_pay: 70404,
-    period: "August 2026",
-    status: "processed",
-  };
+  const p = payroll || defaultPayroll;
 
   return (
-    <div className="payroll-page-wrapper">
+    <Layout>
+      <div className="payroll-page-wrapper">
       {/* Page Header Banner */}
       <div className="payroll-page-header">
         <div>
@@ -77,7 +79,7 @@ export default function Payroll({ employeeId = 1 }) {
       <div className="payroll-highlights-grid">
         <div className="payroll-stat-card purple">
           <span className="p-stat-label">Gross Salary</span>
-          <strong className="p-stat-value">₹{p.gross?.toLocaleString()}</strong>
+          <strong className="p-stat-value">₹{formatCurrency(p.gross, defaultPayroll.gross)}</strong>
           <span className="p-stat-sub">Monthly defined wage</span>
         </div>
 
@@ -95,7 +97,7 @@ export default function Payroll({ employeeId = 1 }) {
 
         <div className="payroll-stat-card pink">
           <span className="p-stat-label">Net Take-Home Pay</span>
-          <strong className="p-stat-value net-highlight">₹{p.net_pay?.toLocaleString()}</strong>
+          <strong className="p-stat-value net-highlight">₹{formatCurrency(p.net_pay, defaultPayroll.net_pay)}</strong>
           <span className="p-stat-sub">
             <StatusDot status="present" size="sm" /> Transferred to Bank Account
           </span>
@@ -139,16 +141,16 @@ export default function Payroll({ employeeId = 1 }) {
               <tr>
                 <td>Basic Pay</td>
                 <td>Fixed Percentage of Wage</td>
-                <td className="text-right font-mono">₹{p.basic?.toLocaleString()}</td>
+                <td className="text-right font-mono">₹{formatCurrency(p.basic, defaultPayroll.basic)}</td>
               </tr>
               <tr>
                 <td>House Rent Allowance (HRA)</td>
                 <td>Standard Allowance Component</td>
-                <td className="text-right font-mono">₹{p.hra?.toLocaleString()}</td>
+                <td className="text-right font-mono">₹{formatCurrency(p.hra, defaultPayroll.hra)}</td>
               </tr>
               <tr className="subtotal-row">
                 <td colSpan="2"><strong>Total Gross Earnings</strong></td>
-                <td className="text-right font-mono"><strong>₹{p.gross?.toLocaleString()}</strong></td>
+                <td className="text-right font-mono"><strong>₹{formatCurrency(p.gross, defaultPayroll.gross)}</strong></td>
               </tr>
 
               {/* Attendance & Payable Days (Core Linkage Highlight) */}
@@ -169,7 +171,7 @@ export default function Payroll({ employeeId = 1 }) {
                 <td><strong>Attendance Deduction</strong></td>
                 <td>Adjustment for unpaid/absent days</td>
                 <td className="text-right font-mono bold danger-text">
-                  {p.deductions > 0 ? `- ₹${p.deductions?.toLocaleString()}` : "₹0 (Full attendance)"}
+                  {p.deductions > 0 ? `- ₹${formatCurrency(p.deductions, defaultPayroll.deductions)}` : "₹0 (Full attendance)"}
                 </td>
               </tr>
 
@@ -180,12 +182,12 @@ export default function Payroll({ employeeId = 1 }) {
               <tr>
                 <td>Provident Fund (PF)</td>
                 <td>Employee PF Contribution</td>
-                <td className="text-right font-mono danger-text">- ₹{p.pf?.toLocaleString()}</td>
+                <td className="text-right font-mono danger-text">- ₹{formatCurrency(p.pf, defaultPayroll.pf)}</td>
               </tr>
               <tr>
                 <td>Professional Tax</td>
                 <td>State Statutory Tax</td>
-                <td className="text-right font-mono danger-text">- ₹{p.professional_tax?.toLocaleString()}</td>
+                <td className="text-right font-mono danger-text">- ₹{formatCurrency(p.professional_tax, defaultPayroll.professional_tax)}</td>
               </tr>
 
               {/* Net Pay Final Total */}
@@ -197,13 +199,14 @@ export default function Payroll({ employeeId = 1 }) {
                   </div>
                 </td>
                 <td className="text-right font-mono">
-                  <span className="net-amount-big">₹{p.net_pay?.toLocaleString()}</span>
+                  <span className="net-amount-big">₹{formatCurrency(p.net_pay, defaultPayroll.net_pay)}</span>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
+      </div>
+    </Layout>
   );
 }
