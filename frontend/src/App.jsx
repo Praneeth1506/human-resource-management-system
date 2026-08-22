@@ -9,6 +9,10 @@ import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import Attendance from "./pages/employee/Attendance";
 import Profile from "./pages/employee/Profile";
 import EditProfile from "./pages/employee/EditProfile";
+import Payroll from "./pages/Payroll";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import EmployeeManagement from "./pages/admin/EmployeeManagement";
+import LeaveApproval from "./pages/admin/LeaveApproval";
 
 // Leave
 import Leave from "./pages/leave/Leave";
@@ -27,6 +31,32 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* Admin */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/employees"
+          element={
+            <ProtectedRoute role="admin">
+              <EmployeeManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/leave"
+          element={
+            <ProtectedRoute role="admin">
+              <LeaveApproval />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Employee Dashboard */}
         <Route
@@ -54,6 +84,16 @@ function App() {
           element={
             <ProtectedRoute role="employee">
               <Leave />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Payroll */}
+        <Route
+          path="/payroll"
+          element={
+            <ProtectedRoute role="employee">
+              <Payroll />
             </ProtectedRoute>
           }
         />

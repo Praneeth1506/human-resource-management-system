@@ -16,12 +16,22 @@ function Login() {
       return;
     }
 
-    // Temporary frontend login
-    // Backend API will replace this later
-    if (loginId.toLowerCase().includes("admin")) {
+    // Temporary frontend login until the authentication API is connected.
+    const normalizedLoginId = loginId.trim().toLowerCase();
+    const isAdminLogin = ["admin", "adminuserid"].includes(normalizedLoginId);
+
+    if (isAdminLogin && password === "admin123") {
       localStorage.setItem("role", "admin");
       navigate("/admin/dashboard");
-    } else {
+      return;
+    }
+
+    if (isAdminLogin) {
+      alert("Invalid admin Login ID or Password");
+      return;
+    }
+
+    {
       localStorage.setItem("role", "employee");
       navigate("/employee/dashboard");
     }
@@ -127,7 +137,7 @@ function Login() {
           <div className="demo-login">
             <strong>Demo Login</strong>
             <p>
-              Enter <b>admin</b> in Login ID for Admin access.
+              Use <b>adminuserid</b> with password <b>admin123</b> for Admin access.
               <br />
               Any other Login ID opens Employee access.
             </p>

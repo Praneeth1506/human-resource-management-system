@@ -1,0 +1,64 @@
+.admin-page {
+  min-height: 100vh;
+  background: #f5f6fa;
+}
+
+.admin-content {
+  width: calc(100% - 250px);
+  min-width: 0;
+  margin-left: 250px;
+}
+
+.admin-page main {
+  min-height: calc(100vh - 70px);
+  padding: 30px;
+  overflow-x: auto;
+}
+
+.admin-page h1 {
+  margin: 0;
+  color: #243038;
+  font-size: 30px;
+}
+
+.admin-page p {
+  color: #7b858c;
+}
+
+.add-employee-button {
+  border: none;
+  border-radius: 8px;
+  background: #256c69;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.add-employee-button:hover {
+  background: #1d5a57;
+}
+
+.admin-page button:hover {
+  filter: brightness(0.92);
+}
+
+.leave-action-cell {
+  min-width: 180px;
+}
+
+.leave-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .admin-content {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .admin-page main {
+    padding: 20px;
+  }
+}

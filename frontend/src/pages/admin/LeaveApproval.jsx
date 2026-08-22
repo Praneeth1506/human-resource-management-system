@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Sidebar from "../../components/Sidebar";
 import Navbar from "../../components/Navbar";
+import "./AdminPages.css";
 
 function LeaveApproval() {
   const [leaves, setLeaves] = useState([
@@ -72,10 +73,10 @@ function LeaveApproval() {
   ).length;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
+    <div className="admin-page" style={{ display: "flex", minHeight: "100vh" }}>
+      <Sidebar role="admin" />
 
-      <div style={{ flex: 1 }}>
+      <div className="admin-content" style={{ flex: 1 }}>
         <Navbar />
 
         <main
@@ -175,9 +176,9 @@ function LeaveApproval() {
                       <strong>{leave.status}</strong>
                     </td>
 
-                    <td style={styles.td}>
+                    <td className="leave-action-cell" style={styles.td}>
                       {leave.status === "Pending" ? (
-                        <>
+                        <div className="leave-action-buttons">
                           <button
                             onClick={() =>
                               handleStatusChange(
@@ -201,7 +202,7 @@ function LeaveApproval() {
                           >
                             Reject
                           </button>
-                        </>
+                        </div>
                       ) : (
                         <span>Completed</span>
                       )}
@@ -239,12 +240,21 @@ const styles = {
   approveButton: {
     padding: "8px 12px",
     cursor: "pointer",
-    marginRight: "8px",
+    border: "none",
+    borderRadius: "7px",
+    backgroundColor: "#256c69",
+    color: "white",
+    fontWeight: "600",
   },
 
   rejectButton: {
     padding: "8px 12px",
     cursor: "pointer",
+    border: "none",
+    borderRadius: "7px",
+    backgroundColor: "#b94a48",
+    color: "white",
+    fontWeight: "600",
   },
 };
 

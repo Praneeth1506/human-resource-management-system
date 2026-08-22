@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Layout from "../../components/Layout";
 import "./EmployeeDashboard.css";
 
@@ -108,7 +109,7 @@ function EmployeeDashboard() {
           <div className="quick-actions-card">
             <h2>Quick Actions</h2>
 
-            <button className="quick-action">
+            <Link to="/attendance" className="quick-action">
               <span className="quick-action-icon">◷</span>
 
               <div>
@@ -117,9 +118,9 @@ function EmployeeDashboard() {
               </div>
 
               <span className="quick-arrow">→</span>
-            </button>
+            </Link>
 
-            <button className="quick-action">
+            <Link to="/leave" className="quick-action">
               <span className="quick-action-icon">▣</span>
 
               <div>
@@ -128,9 +129,9 @@ function EmployeeDashboard() {
               </div>
 
               <span className="quick-arrow">→</span>
-            </button>
+            </Link>
 
-            <button className="quick-action">
+            <Link to="/payroll" className="quick-action">
               <span className="quick-action-icon">₹</span>
 
               <div>
@@ -139,7 +140,7 @@ function EmployeeDashboard() {
               </div>
 
               <span className="quick-arrow">→</span>
-            </button>
+            </Link>
           </div>
         </div>
 

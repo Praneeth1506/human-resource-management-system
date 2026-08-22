@@ -1,5 +1,6 @@
 import Sidebar from "../../components/Sidebar";
 import Navbar from "../../components/Navbar";
+import "./AdminPages.css";
 
 function AdminDashboard() {
   const employees = [
@@ -47,10 +48,10 @@ function AdminDashboard() {
   };
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
-      <Sidebar />
+    <div className="admin-page" style={{ display: "flex", minHeight: "100vh" }}>
+      <Sidebar role="admin" />
 
-      <div style={{ flex: 1 }}>
+      <div className="admin-content" style={{ flex: 1 }}>
         <Navbar />
 
         <main
