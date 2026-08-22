@@ -7,6 +7,7 @@ from backend.schemas.employee import (
     EmployeeUpdate,
 )
 from backend.schemas.leave import LeaveCreate, LeaveOut, LeaveReview
+from backend.schemas.payroll import PayrollOut
 
 __all__ = [
     "LoginRequest",
@@ -21,4 +22,5 @@ __all__ = [
     "LeaveCreate",
     "LeaveOut",
     "LeaveReview",
+    "PayrollOut",
 ]
