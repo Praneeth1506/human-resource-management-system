@@ -1,189 +1,253 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-dom";
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import Attendance from "./pages/Attendance";
 import Leave from "./pages/Leave";
 import Payroll from "./pages/Payroll";
+import ProfileModal from "./components/ProfileModal";
+import StatusDot from "./components/StatusDot";
+import Avatar from "./components/Avatar";
 import "./App.css";
 
-// Temporary hardcoded values until Person 1's auth/login is wired in
-const CURRENT_EMPLOYEE_ID = 1;
-const CURRENT_ROLE = "employee"; // switch to "admin" to test admin view
-const CURRENT_USER_NAME = "Arun Kumar";
-
-const NAV_ITEMS = [
-  {
-    to: "/dashboard",
-    label: "Dashboard",
-    icon: (
-      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2.5" y="2.5" width="6.5" height="6.5" rx="1.6" stroke="currentColor" strokeWidth="1.6" />
-        <rect x="11" y="2.5" width="6.5" height="6.5" rx="1.6" stroke="currentColor" strokeWidth="1.6" />
-        <rect x="2.5" y="11" width="6.5" height="6.5" rx="1.6" stroke="currentColor" strokeWidth="1.6" />
-        <rect x="11" y="11" width="6.5" height="6.5" rx="1.6" stroke="currentColor" strokeWidth="1.6" />
-      </svg>
-    ),
-  },
-  {
-    to: "/attendance",
-    label: "Attendance",
-    icon: (
-      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="10" cy="10" r="7.25" stroke="currentColor" strokeWidth="1.6" />
-        <path d="M10 6v4.3l2.8 1.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    to: "/leave",
-    label: "Leave",
-    icon: (
-      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2.75" y="3.75" width="14.5" height="13" rx="2" stroke="currentColor" strokeWidth="1.6" />
-        <path d="M2.75 7.75h14.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-        <path d="M6.5 2.5v2.5M13.5 2.5v2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    to: "/payroll",
-    label: "Payroll",
-    icon: (
-      <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="2.5" y="4.5" width="15" height="11" rx="2" stroke="currentColor" strokeWidth="1.6" />
-        <path d="M2.5 8.25h15" stroke="currentColor" strokeWidth="1.6" />
-        <path d="M5.5 12h3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-];
-
-const PAGE_TITLES = {
-  "/dashboard": "Dashboard",
-  "/attendance": "Attendance",
-  "/leave": "Leave",
-  "/payroll": "Payroll",
+// Default user data for session context
+const DEFAULT_USER = {
+  id: 1,
+  name: "Alex Morgan",
+  initials: "AM",
+  role: "admin", // "admin" | "employee"
+  job_title: "Head of People & Operations",
+  department: "People Operations",
+  email: "alex.morgan@company.com",
+  status: "present",
+  wage: 85000,
 };
 
-function initials(name) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
+function App() {
+  const [currentRole, setCurrentRole] = useState("admin"); // toggleable between 'admin' and 'employee'
+  const [isCheckedIn, setIsCheckedIn] = useState(true);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-function Shell({ sidebarOpen, onCloseSidebar, onToggleSidebar, children }) {
-  const location = useLocation();
-  const pageTitle = PAGE_TITLES[location.pathname] ?? "Dashboard";
+  const handleCheckInToggle = () => {
+    setIsCheckedIn((prev) => !prev);
+  };
+
+  const currentUser = {
+    ...DEFAULT_USER,
+    status: isCheckedIn ? "present" : "absent",
+    role: currentRole,
+  };
 
   return (
-    <div className="app-shell">
-      {sidebarOpen && <div className="sidebar-backdrop" onClick={onCloseSidebar} />}
-
-      <aside className={`sidebar ${sidebarOpen ? "sidebar-open" : ""}`}>
-        <div className="sidebar-brand">
-          <span className="brand-mark">D</span>
-          <span className="brand-name">Dayflow HRMS</span>
-        </div>
-
-        <nav className="sidebar-nav">
-          {NAV_ITEMS.map((item) => {
-            const active = location.pathname.startsWith(item.to);
-            return (
-              <a
-                key={item.to}
-                href={item.to}
-                className={`nav-item ${active ? "nav-item-active" : ""}`}
-                onClick={onCloseSidebar}
-              >
-                <span className="nav-icon">{item.icon}</span>
-                <span>{item.label}</span>
-              </a>
-            );
-          })}
-        </nav>
-      </aside>
-
-      <div className="main-area">
+    <BrowserRouter>
+      <div className="app-shell">
+        {/* Modern Top Navigation Bar */}
         <header className="topbar">
           <div className="topbar-left">
-            <button
-              type="button"
-              className="menu-toggle"
-              aria-label="Toggle navigation"
-              onClick={onToggleSidebar}
-            >
-              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 5.5h14M3 10h14M3 14.5h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </button>
-            <div>
-              <p className="breadcrumb">Dayflow HRMS</p>
-              <h1 className="page-title">{pageTitle}</h1>
-            </div>
+            <NavLink to="/dashboard" className="brand">
+              <div className="brand-icon">
+                <span>✦</span>
+              </div>
+              <div className="brand-text">
+                <span className="brand-name">WorkPulse</span>
+                <span className="brand-tag">HRMS</span>
+              </div>
+            </NavLink>
+
+            <nav className="nav-links">
+              <NavLink
+                to="/dashboard"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+              >
+                <span className="nav-icon">👥</span>
+                <span>Employees</span>
+              </NavLink>
+              <NavLink
+                to="/attendance"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+              >
+                <span className="nav-icon">📅</span>
+                <span>Attendance</span>
+              </NavLink>
+              <NavLink
+                to="/time-off"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+              >
+                <span className="nav-icon">✈️</span>
+                <span>Time Off</span>
+              </NavLink>
+              <NavLink
+                to="/payroll"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active" : ""}`
+                }
+              >
+                <span className="nav-icon">💳</span>
+                <span>Payroll</span>
+              </NavLink>
+            </nav>
           </div>
 
           <div className="topbar-right">
-            <button type="button" className="icon-btn" aria-label="Search">
-              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="9" cy="9" r="6" stroke="currentColor" strokeWidth="1.6" />
-                <path d="M13.5 13.5 17.5 17.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
+            {/* Search Input Bar (Image 2 theme) */}
+            <div className="search-bar">
+              <span className="search-icon">🔍</span>
+              <input
+                type="text"
+                placeholder="Search employees, roles, IDs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+              />
+            </div>
+
+            {/* Quick Check-In / Check-Out Widget */}
+            <button
+              className={`checkin-btn ${isCheckedIn ? "checked-in" : "checked-out"}`}
+              onClick={handleCheckInToggle}
+              title="Click to toggle attendance status"
+            >
+              <StatusDot status={isCheckedIn ? "present" : "absent"} size="sm" pulse={isCheckedIn} />
+              <span>{isCheckedIn ? "Checked In" : "Check In"}</span>
             </button>
-            <button type="button" className="icon-btn" aria-label="Notifications">
-              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M5 8a5 5 0 0 1 10 0c0 3.5 1.2 4.5 1.2 4.5H3.8S5 11.5 5 8Z"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinejoin="round"
+
+            {/* Notifications */}
+            <button
+              className="icon-button notification-btn"
+              aria-label="Notifications"
+              onClick={() => alert("Action Center: 2 items need attention today.")}
+            >
+              <span>🔔</span>
+              <span className="notification-badge" />
+            </button>
+
+            {/* Profile Pill with Dropdown */}
+            <div className="profile-menu-container">
+              <button
+                className="profile-pill"
+                onClick={() => setShowProfileMenu((prev) => !prev)}
+                aria-expanded={showProfileMenu}
+              >
+                <Avatar
+                  initials={currentUser.initials}
+                  name={currentUser.name}
+                  size="sm"
+                  status={currentUser.status}
+                  paletteIndex={2}
                 />
-                <path d="M8.3 15.5a1.7 1.7 0 0 0 3.4 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-              </svg>
-            </button>
-            <div className="user-chip">
-              <span className="avatar">{initials(CURRENT_USER_NAME)}</span>
-              <span className="user-name">{CURRENT_USER_NAME}</span>
+                <span className="profile-pill-name">{currentUser.name}</span>
+                <span className="profile-pill-chevron">▾</span>
+              </button>
+
+              {showProfileMenu && (
+                <div
+                  className="profile-dropdown-menu"
+                  onClick={() => setShowProfileMenu(false)}
+                >
+                  <div className="dropdown-user-header">
+                    <strong>{currentUser.name}</strong>
+                    <span className="user-role-badge">
+                      {currentRole === "admin" ? "HR Admin" : "Employee"}
+                    </span>
+                    <p className="user-email-text">{currentUser.email}</p>
+                  </div>
+
+                  <div className="dropdown-divider" />
+
+                  <button
+                    className="dropdown-item"
+                    onClick={() => setIsProfileModalOpen(true)}
+                  >
+                    <span className="dropdown-item-icon">👤</span>
+                    <span>My Profile</span>
+                  </button>
+
+                  <div className="dropdown-divider" />
+
+                  {/* Role switcher for convenient local validation */}
+                  <div className="role-switch-row">
+                    <span className="role-switch-label">Viewing Mode:</span>
+                    <div className="role-toggle-group">
+                      <button
+                        className={`role-toggle-btn ${currentRole === "admin" ? "active" : ""}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentRole("admin");
+                        }}
+                      >
+                        Admin
+                      </button>
+                      <button
+                        className={`role-toggle-btn ${currentRole === "employee" ? "active" : ""}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentRole("employee");
+                        }}
+                      >
+                        Employee
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="dropdown-divider" />
+
+                  <button
+                    className="dropdown-item text-danger"
+                    onClick={() => alert("Logged out successfully.")}
+                  >
+                    <span className="dropdown-item-icon">🚪</span>
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </header>
 
-        <main className="content">{children}</main>
+        {/* Main Content Area */}
+        <main className="page-container">
+          <Routes>
+            <Route
+              path="/dashboard"
+              element={
+                currentRole === "admin" ? (
+                  <AdminDashboard searchQuery={searchQuery} />
+                ) : (
+                  <EmployeeDashboard
+                    employeeId={currentUser.id}
+                    isCheckedIn={isCheckedIn}
+                    onToggleCheckIn={handleCheckInToggle}
+                  />
+                )
+              }
+            />
+            <Route path="/attendance" element={<Attendance />} />
+            <Route path="/time-off" element={<Leave />} />
+            <Route path="/leave" element={<Leave />} />
+            <Route
+              path="/payroll"
+              element={<Payroll employeeId={currentUser.id} />}
+            />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </main>
+
+        {/* "My Profile" Modal (View with Profile / Private Info / Salary Info tabs) */}
+        <ProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          employee={currentUser}
+          isAdmin={currentRole === "admin"}
+        />
       </div>
-    </div>
-  );
-}
-
-function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  return (
-    <BrowserRouter>
-      <Shell
-        sidebarOpen={sidebarOpen}
-        onCloseSidebar={() => setSidebarOpen(false)}
-        onToggleSidebar={() => setSidebarOpen((open) => !open)}
-      >
-        <Routes>
-          <Route
-            path="/dashboard"
-            element={
-              CURRENT_ROLE === "admin" ? (
-                <AdminDashboard />
-              ) : (
-                <EmployeeDashboard employeeId={CURRENT_EMPLOYEE_ID} />
-              )
-            }
-          />
-          <Route path="/attendance" element={<Attendance />} />
-          <Route path="/leave" element={<Leave />} />
-          <Route path="/payroll" element={<Payroll employeeId={CURRENT_EMPLOYEE_ID} />} />
-          <Route path="*" element={<Navigate to="/dashboard" />} />
-        </Routes>
-      </Shell>
     </BrowserRouter>
   );
 }
