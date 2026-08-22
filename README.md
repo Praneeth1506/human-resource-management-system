@@ -1,1 +1,1 @@
-# attendence-payroll-system
+# human-resource-management-system
